@@ -71,8 +71,6 @@ public class Swarm : MonoBehaviour
         for (int i = 0; i < numberOfBoids; i++)
         {
             Vector3 pos = transform.position + Random.insideUnitSphere * initializationRadius;
-            pos.y = Mathf.Clamp(pos.y, 1f, 3f); 
-
             Transform t = Instantiate(boidPrefab, pos, Quaternion.identity);
             boidObjects[i] = t;
 
@@ -123,7 +121,7 @@ public class Swarm : MonoBehaviour
 
     private void Update()
     {
-        /* Render information for boidzero, useful for debugging forces and path planning
+        // Render information for boidzero, useful for debugging forces and path planning
         int boidCount = boids.Length;
         for (int i = 1; i < boidCount; i++)
         {
@@ -146,7 +144,7 @@ public class Swarm : MonoBehaviour
             for (int i = 0; i < cornersLength - 1; i++)
                 Debug.DrawLine(boidZeroPath.corners[i], boidZeroPath.corners[i + 1], Color.black);
         }
-        */
+        
     }
 
 
@@ -188,16 +186,13 @@ public class Swarm : MonoBehaviour
         alignment /= neighbourCount;
         cohesion = (cohesion / neighbourCount) - pos;
 
-        Vector3 obstacleForce = ComputeObstacleForce(i);
-        Vector3 worldForce = ComputeWorldBounds(i);
+        Vector3 obstacleForce = ComputeObstacleForce(i) + ComputeWorldBounds(i);
 
         boids[i].currentTotalForce +=
             separationWeight * ((separation.normalized * boidForceScale) - vel) +
             alignmentWeight * ((alignment.normalized * boidForceScale) - vel) +
             cohesionWeight * ((cohesion.normalized * boidForceScale) - vel) +
-            obstacleWeight * ((obstacleForce * boidForceScale) - vel) +
-            obstacleWeight * ((worldForce * boidForceScale) - vel);
-
+            obstacleWeight * ((obstacleForce * boidForceScale) - vel);
         boids[i].alignment = alignment;
         boids[i].cohesion = cohesion;
         boids[i].separation = separation;
@@ -272,8 +267,8 @@ public class Swarm : MonoBehaviour
 
         NavMeshHit startHit, endHit;
 
-        NavMesh.SamplePosition(boids[0].position, out startHit, 5f, NavMesh.AllAreas);
-        NavMesh.SamplePosition(goal, out endHit, 5f, NavMesh.AllAreas);
+        NavMesh.SamplePosition(boids[0].position, out startHit, 10f, NavMesh.AllAreas);
+        NavMesh.SamplePosition(goal, out endHit, 10f, NavMesh.AllAreas);
 
         boidZeroPath = new NavMeshPath();
         NavMesh.CalculatePath(startHit.position, endHit.position,
